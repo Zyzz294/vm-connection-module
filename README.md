@@ -1,6 +1,6 @@
 # VM Connection Module
 
-A simple yet robust Python module for SSH connections to remote VMs in test automation. Handles the essentials: real-time output, reconnection, and reboot detection.
+A simple Python module for SSH connections to remote VMs in test automation. Handles the essentials: real-time output, reconnection, and reboot detection.
 
 ## Quick Start
 
