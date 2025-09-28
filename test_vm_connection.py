@@ -1,7 +1,3 @@
-"""
-Simple tests for vm_connection module
-"""
-
 import pytest
 import time
 from unittest.mock import Mock, patch, MagicMock
@@ -36,7 +32,7 @@ def mock_ssh():
 
 
 def test_init(conn):
-    """Test connection initialization"""
+    
     assert conn.host == 'test-host'
     assert conn.user == 'user'
     assert not conn.connected
@@ -44,10 +40,11 @@ def test_init(conn):
 
 @patch('vm_connection.paramiko.RSAKey.from_private_key_file')
 def test_connect_success(mock_key, conn, mock_ssh):
-    """Test successful connection"""
+
     mock_key.return_value = Mock()
+
     
-    # Mock boot time check
+
     mock_stdout = Mock()
     mock_stdout.read.return_value = b'1234567890'
     mock_ssh.exec_command.return_value = (None, mock_stdout, None)
@@ -60,7 +57,7 @@ def test_connect_success(mock_key, conn, mock_ssh):
 
 @patch('vm_connection.paramiko.RSAKey.from_private_key_file')
 def test_connect_timeout(mock_key, conn, mock_ssh):
-    """Test connection timeout"""
+
     mock_key.return_value = Mock()
     mock_ssh.connect.side_effect = Exception("timeout")
     
@@ -69,12 +66,12 @@ def test_connect_timeout(mock_key, conn, mock_ssh):
 
 
 def test_execute_success(conn, mock_ssh):
-    """Test successful command execution"""
+
     conn.client = mock_ssh
     conn.connected = True
     conn.boot_time = '1234567890'
     
-    # Mock command execution
+
     mock_channel = Mock()
     mock_channel.exit_status_ready.side_effect = [False, True]
     mock_channel.recv_exit_status.return_value = 0
@@ -91,9 +88,9 @@ def test_execute_success(conn, mock_ssh):
     mock_stderr.__iter__ = lambda self: iter([])
     
     mock_ssh.exec_command.side_effect = [
-        # Boot time check
+
         (None, Mock(read=lambda: b'1234567890'), None),
-        # Actual command
+
         (Mock(), mock_stdout, mock_stderr)
     ]
     
@@ -102,7 +99,7 @@ def test_execute_success(conn, mock_ssh):
 
 
 def test_execute_with_callback(conn, mock_ssh):
-    """Test command with output callback"""
+
     conn.client = mock_ssh
     conn.connected = True
     conn.boot_time = '1234567890'
@@ -137,12 +134,12 @@ def test_execute_with_callback(conn, mock_ssh):
 
 @patch('vm_connection.time.time')
 def test_execute_timeout(mock_time, conn, mock_ssh):
-    """Test command timeout"""
+
     conn.client = mock_ssh
     conn.connected = True
     conn.boot_time = '1234567890'
     
-    mock_time.side_effect = [0, 0, 61]  # Timeout after 60s
+    mock_time.side_effect = [0, 0, 61]  
     
     mock_channel = Mock()
     mock_channel.exit_status_ready.return_value = False
@@ -164,13 +161,13 @@ def test_execute_timeout(mock_time, conn, mock_ssh):
 
 
 def test_reboot_detection(conn, mock_ssh):
-    """Test reboot detection"""
+
     conn.client = mock_ssh
     conn.connected = True
     conn.boot_time = '1234567890'
     
-    # Return different boot time
     mock_ssh.exec_command.return_value = (
+
         None, 
         Mock(read=lambda: b'9999999999'), 
         None
@@ -181,7 +178,7 @@ def test_reboot_detection(conn, mock_ssh):
 
 
 def test_is_alive_healthy(conn, mock_ssh):
-    """Test is_alive with healthy VM"""
+
     conn.client = mock_ssh
     conn.connected = True
     
@@ -198,7 +195,7 @@ def test_is_alive_healthy(conn, mock_ssh):
 
 
 def test_is_alive_unhealthy(conn, mock_ssh):
-    """Test is_alive with unhealthy VM"""
+
     conn.client = mock_ssh
     conn.connected = True
     
@@ -212,7 +209,7 @@ def test_is_alive_unhealthy(conn, mock_ssh):
 
 @patch('vm_connection.time.sleep')
 def test_reconnect_success(mock_sleep, conn):
-    """Test successful reconnection"""
+
     with patch.object(conn, 'connect') as mock_connect, \
          patch.object(conn, 'is_alive', return_value=True), \
          patch.object(conn, 'disconnect'):
@@ -223,7 +220,7 @@ def test_reconnect_success(mock_sleep, conn):
 
 @patch('vm_connection.time.sleep')
 def test_reconnect_failure(mock_sleep, conn):
-    """Test failed reconnection"""
+
     with patch.object(conn, 'connect', side_effect=Exception("Failed")), \
          patch.object(conn, 'disconnect'):
         
@@ -231,7 +228,7 @@ def test_reconnect_failure(mock_sleep, conn):
 
 
 def test_context_manager(conn):
-    """Test context manager usage"""
+
     with patch.object(conn, 'connect') as mock_connect, \
          patch.object(conn, 'disconnect') as mock_disconnect:
         
@@ -243,7 +240,7 @@ def test_context_manager(conn):
 
 
 def test_disconnect(conn, mock_ssh):
-    """Test disconnection"""
+
     conn.client = mock_ssh
     conn.connected = True
     
